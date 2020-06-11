@@ -1,0 +1,58 @@
+{
+  "name": "@playpuppy/puppy-matterjs",
+  "version": "0.1.0",
+  "description": "Puppy with Matter.js",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [
+    "physics engine",
+    "programming language"
+  ],
+  "author": "Kimio Kuramitsu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/playpuppy/puppy2d.git"
+  },
+  "bugs": {
+    "url": "https://github.com/playpuppy/puppy2d/issues"
+  },
+  "homepage": "https://github.com/playpuppy/puppy2d",
+  "devDependencies": {
+    "@types/jest": "^24.0.20",
+    "@types/matter-js": "^0.14.2",
+    "@types/node": "^12.7.12",
+    "jest": "^24.9.0",
+    "parcel": "^1.12.4",
+    "ts-jest": "^26.1.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      },
+      "window": {}
+    },
+    "testMatch": [
+      "**/test/*.+(ts|tsx|js)"
+    ]
+  },
+  "dependencies": {
+    "@playpuppy/puppyjs": "^0.1.1",
+    "matter-js": "^0.14.2"
+  }
+}
