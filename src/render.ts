@@ -1,5 +1,23 @@
-// import { Vector, Bounds } from 'matter-js'
-// import { Stopify} from '@playpuppy/origamijs'
+// // The following code comes from matter.js
+// // 
+// // Copyright(c) Liam Brummitt and contributors.
+// // The MIT License (MIT)
+// // 
+// // Porting to TypeScript by Kimio Kuramitsu 
+
+// import { Common, Events } from '../matter-ts/commons';
+// import { Vector, Bounds } from '../matter-ts/geometry';
+// import { Body, Constraint, World } from '../matter-ts/body';
+// import { Pair, Grid } from '../matter-ts/collision';
+
+// /**
+//  * Description
+//  * @method _createCanvas
+//  * @private
+//  * @param {} width
+//  * @param {} height
+//  * @return canvas
+//  */
 
 // const createCanvas = (element: HTMLElement, width: number, height: number) => {
 //   var canvas = document.createElement('canvas');
@@ -53,8 +71,6 @@
 // const textures: any = {
 
 // };
-
-// // const basePath = options.base || 'https://playpuppy.github.io/LIVE2019/image';
 
 // const _getTexture = (imagePath: string, base = '') => {
 //   const image = textures[imagePath];
@@ -123,40 +139,51 @@
 // const _cancelAnimationFrame = window.cancelAnimationFrame;
 
 // export class PuppyRender {
-//   public canvas: HTMLCanvasElement
-//   canvas2d: CanvasRenderingContext2D
-//   width = 1000
-//   height = 1000
-//   scaleX = 1.0
-//   scaleY = 1.0
-//   offsetX = 0
-//   offsetY = 0
+//   public engine: any; // Engine
+//   public mouse: any; //Mouse;
+//   private world: World;
+//   public options: any;
+//   public canvas: HTMLCanvasElement;
+//   context: CanvasRenderingContext2D;//?
+//   // background: string;
+//   scale: Vector = new Vector(1, 1);
+//   offset: Vector = new Vector();
 //   bounds: Bounds;
 //   viewports: [number, number, number, number] | null = null;
 //   frameRequestId = -1;
 //   pixelRatio = 1;
-//   background: string | undefined = undefined;
 
-//   public constructor(element: HTMLElement) {
-//     this.canvas = createCanvas(element, element.clientWidth, element.clientHeight)
+//   /**
+//    * Creates a new renderer. The options parameter is an object that specifies any properties you wish to override the defaults.
+//    * All properties have default values, and many are pre-calculated automatically based on other properties.
+//    * See the properties section below for detailed information on what you can pass via the `options` object.
+//    * @method create
+//    * @param {object} [options]
+//    * @return {render} A new renderer
+//    */
+
+//   public constructor(engine: any, element: HTMLElement) {
+//     this.engine = engine;
+//     this.world = engine.world;
+//     this.options = this.world;
+//     //this.options.wireframes = true;
+//     this.canvas = createCanvas(element, element.clientWidth, element.clientHeight);
 //     //this.mouse = engine.setRender(this);
-//     //this.mouse = engine.getMouse(this);
-//     this.canvas2d = this.canvas.getContext('2d')!
+//     this.mouse = engine.getMouse(this);
+//     this.context = this.canvas.getContext('2d')!;
 //     // init viewport
-//     this.bounds = {
-//       min: {x: 0, y: 0}, 
-//       max: {x: this.canvas.width, y: this.canvas.height}
+//     this.bounds = new Bounds(0, 0, this.canvas.width, this.canvas.height);
+//     if (this.options.screen) {
+//       this.lookAt(0, 0, this.options.width, this.options.height);
 //     }
-//     // if (this.options.screen) {
-//       this.lookAt(0, 0, this.width, this.height);
-//     // }
-//     // else {
-//     //   const hw = this.options.width / 2;
-//     //   const hh = this.options.height / 2;
-//     //   this.lookAt(-hw, hh, hw, -hh);
-//     // }
-//     if (this.background) {
-//       this.applyBackground(this.background);
+//     else {
+//       const hw = this.options.width / 2;
+//       const hh = this.options.height / 2;
+//       this.lookAt(-hw, hh, hw, -hh);
+//     }
+//     this.initEvents();
+//     if (this.options.background) {
+//       this.applyBackground(this.options.background);
 //     }
 //   }
 
@@ -166,21 +193,171 @@
 //     }
 //   }
 
-//   /**
-//  * Positions and sizes the viewport around the given object bounds.
-//  * Objects must have at least one of the following properties:
-//  * - `object.bounds`
-//  * - `object.position`
-//  * - `object.min` and `object.max`
-//  * - `object.x` and `object.y`
-//  * @method lookAt
-//  * @param {render} this
-//  * @param {object[]} objects
-//  * @param {vector} [padding]
-//  * @param {bool} [center=true]
-//  */
+//   // Events 
 
-//   public lookAt(minX: number, minY: number, maxX: number, maxY: number, center = true) {
+//   private keyDown: any = null;
+//   private keyUp: any = null;
+
+//   private mouseMove: any = null;
+//   private mouseDown: any = null;
+//   private mouseUp: any = null;
+//   private mouseWheel: any = null;
+
+//   private initEvents() {
+//     const mouse = this.mouse;
+//     var startTime = 0;
+//     var prevKey = '';
+//     this.keyDown = (event: KeyboardEvent) => {
+//       var keyName = event.key;
+//       if (prevKey !== keyName) {
+//         prevKey = keyName;
+//         startTime = this.engine.timing.timestamp;
+//       }
+//       this.engine.world.isStillActive = true;
+//       this.engine.world.fficall('__keydown__', keyName, 0);
+//     }
+
+//     this.keyUp = (event: KeyboardEvent) => {
+//       var keyName = event.key;
+//       const endTime = this.engine.timing.timestamp;
+//       this.engine.world.isStillActive = true;
+//       this.engine.world.fficall('__keyup__', keyName, Math.max(0, endTime - startTime) | 0);
+//       prevKey = '';
+
+//     }
+
+//     this.mouseMove = (event: any) => {
+//       getMousePosition(event, this.canvas, this.pixelRatio, mouse.absolute);
+//       const touches = event.changedTouches;
+
+//       if (touches) {
+//         mouse.button = 0;
+//         event.preventDefault();
+//       }
+
+//       mouse.position.x = mouse.absolute.x * this.scale.x + this.offset.x;
+//       mouse.position.y = mouse.absolute.y * this.scale.y + this.offset.y;
+//       mouse.sourceEvents.mousemove = event;
+//       this.engine.world.isStillActive = true;
+//       this.engine.world.fficall('__mousemove__', mouse.position.x | 0, mouse.position.y | 0, mouse.button);
+//     };
+
+//     this.mouseDown = (event: any) => {
+//       getMousePosition(event, this.canvas, this.pixelRatio, mouse.absolute);
+//       const touches = event.changedTouches;
+//       if (touches) {
+//         mouse.button = 0;
+//         event.preventDefault();
+//       } else {
+//         mouse.button = event.button;
+//       }
+//       mouse.position.x = mouse.absolute.x * this.scale.x + this.offset.x;
+//       mouse.position.y = mouse.absolute.y * this.scale.y + this.offset.y;
+//       mouse.mousedownPosition.x = mouse.position.x;
+//       mouse.mousedownPosition.y = mouse.position.y;
+//       mouse.sourceEvents.mousedown = event;
+//       this.engine.world.isStillActive = true;
+//       this.engine.world.fficall('__mousedown__', mouse.position.x | 0, mouse.position.y | 0, mouse.button);
+//     };
+
+//     this.mouseUp = (event: any) => {
+//       getMousePosition(event, this.canvas, this.pixelRatio, mouse.absolute);
+//       const touches = event.changedTouches;
+
+//       if (touches) {
+//         event.preventDefault();
+//       }
+
+//       mouse.button = -1;
+//       mouse.position.x = mouse.absolute.x * this.scale.x + this.offset.x;
+//       mouse.position.y = mouse.absolute.y * this.scale.y + this.offset.y;
+//       mouse.mouseupPosition.x = mouse.position.x;
+//       mouse.mouseupPosition.y = mouse.position.y;
+//       mouse.sourceEvents.mouseup = event;
+//       this.engine.world.isStillActive = true;
+//       this.engine.world.fficall('__mouseup__', mouse.position.x | 0, mouse.position.y | 0, mouse.button);
+//     }
+
+//     this.mouseWheel = (event: any) => {
+//       mouse.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
+//       //      event.preventDefault();
+//     };
+
+//     // var updateGravity = function (event) {
+//     //   var orientation = typeof window.orientation !== 'undefined' ? window.orientation : 0,
+//     //     gravity = engine.world.gravity;
+
+//     //   if (orientation === 0) {
+//     //     gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
+//     //     gravity.y = Common.clamp(event.beta, -90, 90) / 90;
+//     //   } else if (orientation === 180) {
+//     //     gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
+//     //     gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
+//     //   } else if (orientation === 90) {
+//     //     gravity.x = Common.clamp(event.beta, -90, 90) / 90;
+//     //     gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
+//     //   } else if (orientation === -90) {
+//     //     gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
+//     //     gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
+//     //   }
+//     // };
+//     // window.addEventListener('deviceorientation', updateGravity);
+
+//   }
+
+//   private enableInputDevices() {
+//     if (this.keyDown != null) {
+//       document.addEventListener('keydown', this.keyDown);
+//       document.addEventListener('keyup', this.keyUp);
+
+//       const element = this.canvas;
+//       element.addEventListener('mousemove', this.mouseMove);
+//       element.addEventListener('mousedown', this.mouseDown);
+//       element.addEventListener('mouseup', this.mouseUp);
+
+//       //element.addEventListener('mousewheel', this.mouseWheel);
+//       // element.addEventListener('DOMMouseScroll', this.mouseWheel);
+
+//       element.addEventListener('touchmove', this.mouseMove);
+//       element.addEventListener('touchstart', this.mouseDown);
+//       element.addEventListener('touchend', this.mouseUp);
+//     }
+//   }
+
+//   private disableInputDevices() {
+//     if (this.keyDown !== null) {
+//       document.removeEventListener('keydown', this.keyDown);
+//       document.removeEventListener('keyup', this.keyUp);
+
+//       const element = this.canvas;
+//       element.removeEventListener('mousemove', this.mouseMove);
+//       element.removeEventListener('mousedown', this.mouseDown);
+//       element.removeEventListener('mouseup', this.mouseUp);
+
+//       // element.removeEventListener('mousewheel', this.mouseWheel);
+//       // element.addEventListener('DOMMouseScroll', this.mouseWheel);
+
+//       element.removeEventListener('touchmove', this.mouseMove);
+//       element.removeEventListener('touchstart', this.mouseDown);
+//       element.removeEventListener('touchend', this.mouseUp);
+//     }
+//   }
+
+//   /**
+//    * Positions and sizes the viewport around the given object bounds.
+//    * Objects must have at least one of the following properties:
+//    * - `object.bounds`
+//    * - `object.position`
+//    * - `object.min` and `object.max`
+//    * - `object.x` and `object.y`
+//    * @method lookAt
+//    * @param {render} this
+//    * @param {object[]} objects
+//    * @param {vector} [padding]
+//    * @param {bool} [center=true]
+//    */
+
+//   private lookAt(minX: number, minY: number, maxX: number, maxY: number, center = true) {
 //     // find ratios
 //     const viewWidth = (maxX - minX);
 //     const viewHeight = (maxY - minY);
@@ -214,13 +391,12 @@
 
 //     const mx = (this.bounds.max.x - this.bounds.min.x) / this.canvas.width;
 //     const my = (this.bounds.max.y - this.bounds.min.y) / this.canvas.height;
-//     this.scaleX = mx;
-//     this.scaleY = my;
-//     this.offsetX = this.bounds.min.x;
-//     this.offsetY = this.bounds.min.y;
-//     // if (my < 0) {
-//     //   this.bounds = new Bounds(this.bounds.min.x, this.bounds.max.y, this.bounds.max.x, this.bounds.min.y);
-//     // }
+//     this.scale.x = mx;
+//     this.scale.y = my;
+//     this.offset = new Vector(this.bounds.min.x, this.bounds.min.y);
+//     if (my < 0) {
+//       this.bounds = new Bounds(this.bounds.min.x, this.bounds.max.y, this.bounds.max.x, this.bounds.min.y);
+//     }
 //     // update mouse
 //     if (this.mouse) {
 //       //console.log(`BOUND ${this.bounds.min.x} ${this.bounds.min.y} ${this.bounds.max.x} ${this.bounds.max.y}`)
@@ -228,6 +404,27 @@
 //       this.mouse.setOffset(this.offset);
 //     }
 //     this.viewports = [minX, minY, maxX, maxY];
+//   }
+
+//   public isComputerScreen() {
+//     return this.scale.y > 0;
+//   }
+
+//   private yscale(y: number) {
+//     return this.scale.y > 0 ? y : -y;
+//   }
+
+//   public setViewport(x1: number, y1: number, x2: number, y2: number, center = true) {
+//     const minX = Math.min(x1, x2);
+//     const minY = Math.min(y1, y2);
+//     const maxX = Math.max(x1, x2);
+//     const maxY = Math.max(y1, y2);
+//     if (this.isComputerScreen()) {
+//       this.lookAt(minX, minY, maxX, maxY, center);
+//     }
+//     else {
+//       this.lookAt(minX, maxY, maxX, minY, center);
+//     }
 //   }
 
 //   public resize(width: number, height: number) {
@@ -241,55 +438,43 @@
 
 //   public measureWidth(text: string, font?: string) {
 //     if (font) {
-//       const defaultFont = this.canvas2d.font;
-//       this.canvas2d.font = font;
-//       const m = this.canvas2d.measureText(text);
-//       this.canvas2d.font = defaultFont;
+//       const defaultFont = this.context.font;
+//       this.context.font = font;
+//       const m = this.context.measureText(text);
+//       this.context.font = defaultFont;
 //       return m.width;
 //     }
 //     else {
-//       const m = this.canvas2d.measureText(text);
+//       const m = this.context.measureText(text);
 //       return m.width;
 //     }
 //   }
 
-//   // public isComputerScreen() {
-//   //   return this.scale.y > 0;
-//   // }
+//   showingMessage: string | null = null;
 
-//   // private yscale(y: number) {
-//   //   return this.scale.y > 0 ? y : -y;
-//   // }
+//   public show(message: string, time = 1000) {
+//     this.showingMessage = message;
+//     if (this.showingMessage !== null) {
+//       setTimeout(() => { this.showingMessage = null }, time);
+//     }
+//   }
 
-//   // public setViewport(x1: number, y1: number, x2: number, y2: number, center = true) {
-//   //   const minX = Math.min(x1, x2);
-//   //   const minY = Math.min(y1, y2);
-//   //   const maxX = Math.max(x1, x2);
-//   //   const maxY = Math.max(y1, y2);
-//   //   if (this.isComputerScreen()) {
-//   //     this.lookAt(minX, minY, maxX, maxY, center);
-//   //   }
-//   //   else {
-//   //     this.lookAt(minX, maxY, maxX, minY, center);
-//   //   }
-//   // }
+//   /**
+//    * Continuously updates the render canvas on the `requestAnimationFrame` event.
+//    * @method run
+//    * @param {render} this
+//    */
 
-//   // showingMessage: string | null = null;
-
-//   // public show(message: string, time = 1000) {
-//   //   this.showingMessage = message;
-//   //   if (this.showingMessage !== null) {
-//   //     setTimeout(() => { this.showingMessage = null }, time);
-//   //   }
-//   // }
-
-//   public start(px: any) {
-//     this.enableInputDevices(px)
-//     this.canvas.style.filter = ''
+//   public start(message?: string) {
+//     this.enableInputDevices();
+//     if (message !== undefined) {
+//       this.show(message);
+//     }
+//     this.canvas.style.filter = '';
 //     if (_requestAnimationFrame !== undefined) {
 //       const loop = (time: number) => {
 //         this.frameRequestId = _requestAnimationFrame(loop);
-//         this.draw(px);
+//         this.draw();
 //       };
 //       loop(1);//
 //     }
@@ -301,21 +486,67 @@
 //    * @param {render} render
 //    */
 
-//   public stop() {
+//   public stop(message?: string) {
 //     this.disableInputDevices();
-//     if (_cancelAnimationFrame !== undefined) {
-//       _cancelAnimationFrame(this.frameRequestId);
+//     if (message !== undefined) {
+//       this.show(message);
+//       setTimeout(() => {
+//         _cancelAnimationFrame(this.frameRequestId);
+//         this.canvas.style.filter = 'grayscale(100%)';
+//       }, 100);
+//     }
+//     else {
+//       if (_cancelAnimationFrame !== undefined) {
+//         _cancelAnimationFrame(this.frameRequestId);
+//       }
 //     }
 //   }
 
-//   private startViewTransform() {
-//     this.canvas2d.save();
-//     this.canvas2d.translate(this.canvas.width / 2, this.canvas.height / 2);
-//     this.canvas2d.scale(this.pixelRatio / this.scaleX, this.pixelRatio / this.scaleY);
+//   /**
+//    * Sets the pixel ratio of the renderer and updates the canvas.
+//    * To automatically detect the correct ratio, pass the string `'auto'` for `pixelRatio`.
+//    * @method setPixelRatio
+//    * @param {render} this
+//    * @param {number} pixelRatio
+//    */
+
+//   private setPixelRatio(pixelRatio?: number) {
+//     //   var options = this.world;
+//     //   var canvas = this.canvas;
+
+//     //   if (pixelRatio === undefined) {
+//     //     pixelRatio = _getPixelRatio(canvas);
+//     //   }
+
+//     //   options.pixelRatio = pixelRatio;
+//     //   canvas.setAttribute('data-pixel-ratio', `${pixelRatio}`);
+//     //   canvas.width = options.width * pixelRatio;
+//     //   canvas.height = options.height * pixelRatio;
+//     //   canvas.style.width = options.width + 'px';
+//     //   canvas.style.height = options.height + 'px';
+//     // 
 //   }
 
+//   /**
+//    * Applies viewport transforms based on `render.bounds` to a render context.
+//    * @method startViewTransform
+//    * @param {render} this
+//    */
+
+//   private startViewTransform() {
+//     this.context.save();
+//     this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
+//     this.context.scale(this.pixelRatio / this.scale.x, this.pixelRatio / this.scale.y);
+//   }
+
+//   /**
+//    * Resets all transforms on the render context.
+//    * @method endViewTransform
+//    * @param {render} render
+//    */
+
 //   private endViewTransform() {
-//     this.canvas2d.restore();
+//     this.context.restore();
 //   }
 
 //   /**
@@ -325,87 +556,106 @@
 //    * @param {render} this
 //    */
 
-//   private draw(px: any) {
-//     const canvas = this.canvas
-//     const c2d = this.canvas2d
-//     const engine = px['$__engine__']
-//     const world = px['$__world__']
-//     const bodies = world.allBodies()
-//     const constraints = world.allConstraints()
+//   //private globalAlpha = 0.9;
+//   private ticks = 0;
 
-//     const bodies0: any[] = px['$__bodies0__']
-//     const bodiesZ: any[] = px['$__bodiesZ__']
+//   public draw() {
+//     const engine = this.engine;
+//     const world = engine.world;
+//     const canvas = this.canvas;
+//     const context = this.context;
+//     const options = world as any;
+//     const allBodies = world.allBodies();
+//     const allConstraints = world.allConstraints();
+//     const background = options.wireframes ? 'rgba(230,230,230,0.5)' : world.background;
+//     const timestamp = engine.timing.timestamp;
 
-//     // const timestamp = engine.timing.timestamp;
-//     // var event = {
-//     //   timestamp: timestamp
-//     // }
-//     // world.vars['TIMESTAMP'] = timestamp;
-//     // world.vars['TIME'] = ((timestamp / 1000) | 0);
-//     // world.vars['MOUSE'] = engine.mouse.position;
-//     // world.vars['VIEWPORT'] = this.bounds;
+//     var bodies: Body[] = [];
+//     var constraints: Constraint[] = [];
+//     const bodies0: Body[] = world.allBodies0();
+//     const bodiesZ: Body[] = world.allBodiesZ();
 
-//     //Events.trigger(this, 'beforeRender', event);
+//     var event = {
+//       timestamp: timestamp
+//     }
+//     world.vars['TIMESTAMP'] = timestamp;
+//     world.vars['TIME'] = ((timestamp / 1000) | 0);
+//     world.vars['MOUSE'] = engine.mouse.position;
+//     world.vars['VIEWPORT'] = this.bounds;
+
+//     Events.trigger(this, 'beforeRender', event);
 
 //     // apply background if it has changed
+
 //     // clear the canvas with a transparent fill, 
 //     // to allow the canvas background to show
+//     context.globalCompositeOperation = 'source-in';
+//     context.fillStyle = "transparent";
+//     context.fillRect(0, 0, canvas.width, canvas.height);
+//     context.globalCompositeOperation = 'source-over';
 
-//     c2d.globalCompositeOperation = 'source-in';
-//     c2d.fillStyle = "transparent";
-//     c2d.fillRect(0, 0, canvas.width, canvas.height);
-//     c2d.globalCompositeOperation = 'source-over';
+//     // filter out bodies that are not in view
+//     for (var i = 0; i < allBodies.length; i++) {
+//       var body = allBodies[i];
+//       if (Bounds.overlaps(body.bounds, this.bounds))
+//         bodies.push(body);
+//     }
 
-//     // // filter out bodies that are not in view
-//     // for (var i = 0; i < allBodies.length; i++) {
-//     //   var body = allBodies[i];
-//     //   if (Bounds.overlaps(body.bounds, this.bounds))
-//     //     bodies.push(body);
-//     // }
+//     // filter out constraints that are not in view
+//     for (var i = 0; i < allConstraints.length; i++) {
+//       var constraint = allConstraints[i],
+//         bodyA = constraint.bodyA,
+//         bodyB = constraint.bodyB,
+//         pointAWorld = constraint.pointA,
+//         pointBWorld = constraint.pointB;
 
-//     // // filter out constraints that are not in view
-//     // for (var i = 0; i < allConstraints.length; i++) {
-//     //   var constraint = allConstraints[i],
-//     //     bodyA = constraint.bodyA,
-//     //     bodyB = constraint.bodyB,
-//     //     pointAWorld = constraint.pointA,
-//     //     pointBWorld = constraint.pointB;
+//       if (bodyA) pointAWorld = Vector.add(bodyA.position, constraint.pointA!);
+//       if (bodyB) pointBWorld = Vector.add(bodyB.position, constraint.pointB!);
 
-//     //   if (bodyA) pointAWorld = Vector.add(bodyA.position, constraint.pointA!);
-//     //   if (bodyB) pointBWorld = Vector.add(bodyB.position, constraint.pointB!);
+//       if (!pointAWorld || !pointBWorld)
+//         continue;
 
-//     //   if (!pointAWorld || !pointBWorld)
-//     //     continue;
-
-//     //   if (Bounds.contains(this.bounds, pointAWorld) || Bounds.contains(this.bounds, pointBWorld))
-//     //     constraints.push(constraint);
-//     // }
+//       if (Bounds.contains(this.bounds, pointAWorld) || Bounds.contains(this.bounds, pointBWorld))
+//         constraints.push(constraint);
+//     }
 
 //     // transform the view
 //     this.startViewTransform();
+
+//     if (!options.wireframes) {
 //       // fully featured rendering of bodies
-//     this.drawBodies(bodies0, c2d);
-//     this.drawBodies(bodies, c2d);
-//     //this.constraints(constraints, c2d);
+//       this.bodies(bodies0, context);
+//       this.bodies(bodies, context);
+//     } else {
+//       // optimised method for wireframes only
+//       this.bodyWireframes(bodies, context);
+//       this.bodyBounds(bodies, context);
+//       this.bodyAxes(bodies, context);
+//       this.bodyPositions(bodies, context);
+//       this.bodyVelocity(bodies, context);
+//       this.collisions(engine.pairs.list, context);
+//       this.grid(engine.broadphase, context);
+//     }
+//     this.constraints(constraints, context);
+//     this.bodies(bodiesZ, context);
+
 //     this.endViewTransform();
-//     this.drawBodies(bodiesZ, c2d);
+//     this.ticks += 1;
+//     this.world.fficall('__motion__', this.ticks);
 
-//     // this.ticks += 1;
-//     // this.world.fficall('__motion__', this.ticks);
+//     if (this.showingMessage !== null) {
+//       context.font = 'bold 80px sans-serif';
+//       const w = context.measureText(this.showingMessage).width;
+//       const cx = this.canvas.width / 2;
+//       const cy = this.canvas.height / 2;
+//       context.fillStyle = 'rgba(0,0,0,0.75)';
+//       context.fillRect(cx - w, cy - w, w + w, w + w);
+//       context.fillStyle = 'white';
+//       context.textAlign = 'center';
+//       context.fillText(this.showingMessage, cx, cy + 40);
+//     }
 
-//     // if (this.showingMessage !== null) {
-//     //   c2d.font = 'bold 80px sans-serif';
-//     //   const w = c2d.measureText(this.showingMessage).width;
-//     //   const cx = this.canvas.width / 2;
-//     //   const cy = this.canvas.height / 2;
-//     //   c2d.fillStyle = 'rgba(0,0,0,0.75)';
-//     //   c2d.fillRect(cx - w, cy - w, w + w, w + w);
-//     //   c2d.fillStyle = 'white';
-//     //   c2d.textAlign = 'center';
-//     //   c2d.fillText(this.showingMessage, cx, cy + 40);
-//     // }
-
-//     //Events.trigger(this, 'afterRender', event);
+//     Events.trigger(this, 'afterRender', event);
 //     //console.log(world.isModified);
 //   }
 
@@ -426,156 +676,17 @@
 //     this.canvas.style.backgroundSize = "contain";
 //   }
 
-//   private drawBodies(bodies: any[], c: CanvasRenderingContext2D) {
-//     // const c = context;
-//     // const options = this.world as any;
-//     // //const showInternalEdges = options.showInternalEdges || !options.wireframes;
-//     // const wireframes = options.wireframes;
-//     // const globalAlpha = options.opacity || 1;
+//   /**
+//    * Description
+//    * @private
+//    * @method constraints
+//    * @param {constraint[]} constraints
+//    * @param {RenderingContext} context
+//    */
 
-//     for (var i = 0; i < bodies.length; i++) {
-//       const body = bodies[i];
-//       if (!body.visible || !Bounds.overlaps(body.bounds, this.bounds)) {
-//         continue
-//       }
-//       if (body.draw) {
-//         body.draw(c)
-//       }
+//   private constraints(constraints: Constraint[], context: CanvasRenderingContext2D) {
+//     const c = context;
 
-//       // quick anime
-//       body.doMotion();
-//     }
-//   }
-
-//   private drawMatterBody(body: any, c: CanvasRenderingContext2D) {
-//     for (var k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k++) {
-//       const part: any = body.parts[k];
-//       if (!part.visible) {
-//         continue;
-//       }
-//       c.globalAlpha = (part.opacity) ? 1.0 * part.opacity : 1.0;
-//       if (part.texture) {
-//         this.drawTexture(part)
-//       } else {
-//         this.drawPolygon(part)
-//       }
-//       c.globalAlpha = 1.0;
-//     }
-//     if (body.textRef !== undefined) {
-//       this.drawText(body);
-//     }
-//   }
-
-//   private drawTexture(part: any) {
-//     const c = this.canvas2d;
-//     const texture = _getTexture(part.texture);
-//     c.translate(part.position.x, part.position.y);
-//     // if (this.scaleY < 0) {
-//     //   c.rotate(Math.PI + part.angle);
-//     // }
-//     // else {
-//     c.rotate(part.angle);
-//     // }
-//     try {
-//       c.drawImage(
-//         texture,
-//         part.width * -part.xOffset * part.xScale,
-//         part.height * -part.yOffset * part.yScale,
-//         part.width * part.xScale,
-//         part.height * part.yScale
-//       )
-//     }
-//     catch (e) {
-//     }
-//     // revert translation, hopefully faster than save / restore
-//     // if (this.scaleY < 0) {
-//     //   c.rotate(-Math.PI - part.angle);
-//     // }
-//     // else {
-//     c.rotate(part.angle);
-//     // }
-//     c.translate(-part.position.x, -part.position.y);
-//   }
-
-//   private drawPolygon(part: any) {
-//     const c = this.canvas2d;
-//     if (part.circleRadius) {
-//       c.beginPath();
-//       c.arc(part.position.x, part.position.y, part.circleRadius, 0, 2 * Math.PI);
-//     } else {
-//       c.beginPath();
-//       c.moveTo(part.vertices[0].x, part.vertices[0].y);
-//       for (var j = 1; j < part.vertices.length; j++) {
-//         if (!part.vertices[j - 1].isInternal /* || showInternalEdges */) {
-//           c.lineTo(part.vertices[j].x, part.vertices[j].y);
-//         } else {
-//           c.moveTo(part.vertices[j].x, part.vertices[j].y);
-//         }
-//         if (part.vertices[j].isInternal /* && !showInternalEdges*/) {
-//           c.moveTo(part.vertices[(j + 1) % part.vertices.length].x, part.vertices[(j + 1) % part.vertices.length].y);
-//         }
-//       }
-//       c.lineTo(part.vertices[0].x, part.vertices[0].y);
-//       c.closePath();
-//     }
-//     c.fillStyle = part.fillStyle;
-//     if (part.lineWidth) {
-//       c.lineWidth = part.lineWidth;
-//       c.strokeStyle = part.strokeStyle;
-//       c.stroke();
-//     }
-//     c.fill();
-//   }
-
-//   defaultFont = "36px Arial"
-//   defaultFontColor = 'gray'
-
-//   private drawText(body: any) {
-//     const c = this.canvas2d;
-//     const text: string = body.textRef(body);
-//     const cx = body.position.x;
-//     const cy = body.position.y;
-//     c.save();
-//     c.globalAlpha = 1;
-//     c.font = body.font || this.defaultFont;
-//     c.fillStyle = body.fontColor || this.defaultFontColor;
-//     c.translate(cx, cy);
-//     // if (this.scaleY < 0) {
-//     //   c.rotate(Math.PI);
-//     //   c.scale(-1, 1);
-//     // }
-//     if (body.caption) {
-//       const width = body.width;
-//       const height = body.height;
-//       if (height > 79) {
-//         c.textAlign = 'center';
-//         //c.fillStyle = '#666666';
-//         c.fillText(body.caption, 0, -20, width * 0.45);
-//         //c.fillStyle = ticker.fontColor || defaultFontColor;
-//         c.textAlign = 'center';
-//         c.fillText(text, 0, +20, width * 0.90);
-//       }
-//       else {
-//         c.textAlign = 'left';
-//         c.fillText(body.caption, - width / 2, 0, width * 0.45);
-//         c.textAlign = 'right';
-//         c.fillText(text, width / 2, 0, width * 0.50);
-//       }
-//     }
-//     else {
-//       const width = body.width || 100;
-//       c.textAlign = body.textAlign || 'center';
-//       // c.fillStyle = '#000000';
-//       // c.fillText(text, -2, -2, width);
-//       c.fillText(text, 0, 0, width * 0.95);
-//     }
-//     //c.rotate(-Math.PI);
-//     //c.translate(-cx, -cy);
-//     c.restore();
-//   }
-
-
-//   private drawConstraints(constraints: any[], c: CanvasRenderingContext2D) {
 //     for (var i = 0; i < constraints.length; i++) {
 //       const constraint = constraints[i];
 
@@ -634,164 +745,795 @@
 //     }
 //   }
 
-//   // Events 
+//   // /**
+//   //  * Description
+//   //  * @private
+//   //  * @method bodyShadows
+//   //  * @param {render} render
+//   //  * @param {body[]} bodies
+//   //  * @param {RenderingContext} context
+//   //  */
 
-//   private keyDown: any = null;
-//   private keyUp: any = null;
+//   // private bodyShadows(bodies: Body[], context: CanvasRenderingContext2D) {
+//   //   var c = context,
+//   //     engine = this.engine;
 
-//   private mouseMove: any = null;
-//   private mouseDown: any = null;
-//   private mouseUp: any = null;
-//   private mouseWheel: any = null;
+//   //   for (var i = 0; i < bodies.length; i++) {
+//   //     var body = bodies[i];
 
-//   private initEvents(px: any) {
-//     // const mouse = this.mouse;
-//     //const engine = px['$__engine__']
-//     var startTime = 0;
-//     var prevKey = '';
+//   //     if (!body.visible)
+//   //       continue;
 
-//     this.keyDown = (event: KeyboardEvent) => {
-//       const keyName = event.key;
-//       if (prevKey !== keyName) {
-//         prevKey = keyName;
-//         startTime = px[PuppyKey.timestamp] || 0;
+//   //     if (body.circleRadius) {
+//   //       c.beginPath();
+//   //       c.arc(body.position.x, body.position.y, body.circleRadius, 0, 2 * Math.PI);
+//   //       c.closePath();
+//   //     } else {
+//   //       c.beginPath();
+//   //       c.moveTo(body.vertices[0].x, body.vertices[0].y);
+//   //       for (var j = 1; j < body.vertices.length; j++) {
+//   //         c.lineTo(body.vertices[j].x, body.vertices[j].y);
+//   //       }
+//   //       c.closePath();
+//   //     }
+
+//   //     var distanceX = body.position.x - this.options.width * 0.5,
+//   //       distanceY = body.position.y - this.options.height * 0.2,
+//   //       distance = Math.abs(distanceX) + Math.abs(distanceY);
+
+//   //     c.shadowColor = 'rgba(0,0,0,0.15)';
+//   //     c.shadowOffsetX = 0.05 * distanceX;
+//   //     c.shadowOffsetY = 0.05 * distanceY;
+//   //     c.shadowBlur = 1 + 12 * Math.min(1, distance / 1000);
+
+//   //     c.fill();
+
+//   //     // FIXME
+//   //     // c.shadowColor = null;
+//   //     // c.shadowOffsetX = null;
+//   //     // c.shadowOffsetY = null;
+//   //     // c.shadowBlur = null;
+//   //   }
+//   // }
+
+//   /**
+//    * Description
+//    * @private
+//    * @method bodies
+//    * @param {render} render
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodies(bodies: Body[], context: CanvasRenderingContext2D) {
+//     const c = context;
+//     const options = this.world as any;
+//     //const showInternalEdges = options.showInternalEdges || !options.wireframes;
+//     const wireframes = options.wireframes;
+//     const globalAlpha = options.opacity || 1;
+//     const defaultFont = options.font || "36px Arial";
+//     const defaultFontColor = options.fontColor || 'gray';
+//     const basePath = options.base || 'https://playpuppy.github.io/LIVE2019/image';
+
+//     for (var i = 0; i < bodies.length; i++) {
+//       const body = bodies[i];
+
+//       if (!body.visible)
+//         continue;
+
+//       // handle compound parts
+//       for (var k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k++) {
+//         var part: any = body.parts[k];
+
+//         if (!part.visible)
+//           continue;
+
+//         // if (options.showSleeping && body.isSleeping) {
+//         //   c.globalAlpha = 0.5 * part.opacity;
+//         // } else 
+//         c.globalAlpha = globalAlpha;
+//         if (part.opacity !== 1) {
+//           c.globalAlpha *= part.opacity;
+//         }
+//         if (part.texture && !wireframes) {
+//           const texture = _getTexture(part.texture, basePath);
+
+//           c.translate(part.position.x, part.position.y);
+//           if (this.scale.y < 0) {
+//             c.rotate(Math.PI + part.angle);
+//             //c.scale(-1, 1);
+//           }
+//           else {
+//             c.rotate(part.angle);
+//           }
+//           try {
+//             c.drawImage(
+//               texture,
+//               part.width * -part.xOffset * part.xScale,
+//               part.height * -part.yOffset * part.yScale,
+//               part.width * part.xScale,
+//               part.height * part.yScale
+//             );
+//           }
+//           catch (e) {
+
+//           }
+//           // revert translation, hopefully faster than save / restore
+//           if (this.scale.y < 0) {
+//             c.rotate(-Math.PI - part.angle);
+//             //c.scale(1, 1);
+//           }
+//           else {
+//             c.rotate(part.angle);
+//           }
+//           c.translate(-part.position.x, -part.position.y);
+//         } else {
+//           // part polygon
+//           if (part.circleRadius) {
+//             c.beginPath();
+//             c.arc(part.position.x, part.position.y, part.circleRadius, 0, 2 * Math.PI);
+//           } else {
+//             c.beginPath();
+//             c.moveTo(part.vertices[0].x, part.vertices[0].y);
+
+//             for (var j = 1; j < part.vertices.length; j++) {
+//               if (!part.vertices[j - 1].isInternal /* || showInternalEdges */) {
+//                 c.lineTo(part.vertices[j].x, part.vertices[j].y);
+//               } else {
+//                 c.moveTo(part.vertices[j].x, part.vertices[j].y);
+//               }
+
+//               if (part.vertices[j].isInternal /* && !showInternalEdges*/) {
+//                 c.moveTo(part.vertices[(j + 1) % part.vertices.length].x, part.vertices[(j + 1) % part.vertices.length].y);
+//               }
+//             }
+//             c.lineTo(part.vertices[0].x, part.vertices[0].y);
+//             c.closePath();
+//           }
+//           if (wireframes) {
+//             c.lineWidth = 1;
+//             c.strokeStyle = '#bbb';
+//             c.stroke();
+//           }
+//           else {
+//             c.fillStyle = part.fillStyle;
+//             if (part.lineWidth) {
+//               c.lineWidth = part.lineWidth;
+//               c.strokeStyle = part.strokeStyle;
+//               c.stroke();
+//             }
+//             c.fill();
+//           }
+//         }
+//         c.globalAlpha = globalAlpha;
 //       }
-//       if(px) {
-//         px[PuppyKey.UserActive] = true
-//         fficall(px, PuppyKey.keyDown, keyName, 0)
+
+//       // text, 
+//       const ticker: any = body;
+//       if (ticker.textRef !== undefined) {
+//         const text: string = ticker.textRef(body);
+//         const cx = body.position.x;
+//         const cy = body.position.y;
+//         c.save();
+//         c.globalAlpha = 1;
+//         c.font = ticker.font || defaultFont;
+//         c.fillStyle = ticker.fontColor || defaultFontColor;
+//         c.translate(cx, cy);
+//         if (this.scale.y < 0) {
+//           c.rotate(Math.PI);
+//           c.scale(-1, 1);
+//         }
+//         if (ticker.caption) {
+//           const width = ticker.width;
+//           const height = ticker.height;
+//           if (height > 79) {
+//             c.textAlign = 'center';
+//             //c.fillStyle = '#666666';
+//             c.fillText(ticker.caption, 0, -20, width * 0.45);
+//             //c.fillStyle = ticker.fontColor || defaultFontColor;
+//             c.textAlign = 'center';
+//             c.fillText(text, 0, +20, width * 0.90);
+//           }
+//           else {
+//             c.textAlign = 'left';
+//             c.fillText(ticker.caption, - width / 2, 0, width * 0.45);
+//             c.textAlign = 'right';
+//             c.fillText(text, width / 2, 0, width * 0.50);
+//           }
+//         }
+//         else {
+//           const width = ticker.width || 100;
+//           c.textAlign = ticker.textAlign || 'center';
+//           // c.fillStyle = '#000000';
+//           // c.fillText(text, -2, -2, width);
+//           c.fillText(text, 0, 0, width * 0.95);
+//         }
+//         //c.rotate(-Math.PI);
+//         //c.translate(-cx, -cy);
+//         c.restore();
+//       }
+//       // quick anime
+//       ticker.doMotion();
+//     }
+//   }
+
+//   /**
+//    * Optimised method for drawing body wireframes in one pass
+//    * @private
+//    * @method bodyWireframes
+//    * @param {render} this
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyWireframes(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       showInternalEdges = this.options.showInternalEdges,
+//       body,
+//       part,
+//       i,
+//       j,
+//       k;
+
+//     c.beginPath();
+
+//     // render all bodies
+//     for (i = 0; i < bodies.length; i++) {
+//       body = bodies[i];
+
+//       if (!body.visible)
+//         continue;
+
+//       // handle compound parts
+//       for (k = body.parts.length > 1 ? 1 : 0; k < body.parts.length; k++) {
+//         part = body.parts[k];
+
+//         c.moveTo(part.vertices[0].x, part.vertices[0].y);
+
+//         for (j = 1; j < part.vertices.length; j++) {
+//           if (!part.vertices[j - 1].isInternal || showInternalEdges) {
+//             c.lineTo(part.vertices[j].x, part.vertices[j].y);
+//           } else {
+//             c.moveTo(part.vertices[j].x, part.vertices[j].y);
+//           }
+
+//           if (part.vertices[j].isInternal && !showInternalEdges) {
+//             c.moveTo(part.vertices[(j + 1) % part.vertices.length].x, part.vertices[(j + 1) % part.vertices.length].y);
+//           }
+//         }
+
+//         c.lineTo(part.vertices[0].x, part.vertices[0].y);
 //       }
 //     }
 
-//     this.keyUp = (event: KeyboardEvent) => {
-//       const keyName = event.key;
-//       const endTime = px[PuppyKey.timestamp] || 0;
-//       if (px) {
-//         px[PuppyKey.UserActive] = true
-//         fficall(px, PuppyKey.keyUp, keyName, Math.max(0, endTime - startTime) | 0)
+//     c.lineWidth = 1;
+//     c.strokeStyle = '#bbb';
+//     c.stroke();
+//   };
+
+//   /**
+//    * Optimised method for drawing body convex hull wireframes in one pass
+//    * @private
+//    * @method bodyConvexHulls
+//    * @param {render} this
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyConvexHulls(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       body,
+//       part,
+//       i,
+//       j,
+//       k;
+
+//     c.beginPath();
+
+//     // render convex hulls
+//     for (i = 0; i < bodies.length; i++) {
+//       body = bodies[i];
+
+//       if (!body.visible || body.parts.length === 1)
+//         continue;
+
+//       c.moveTo(body.vertices[0].x, body.vertices[0].y);
+
+//       for (j = 1; j < body.vertices.length; j++) {
+//         c.lineTo(body.vertices[j].x, body.vertices[j].y);
 //       }
-//       prevKey = '';
+
+//       c.lineTo(body.vertices[0].x, body.vertices[0].y);
 //     }
 
-//     /* mouse */
+//     c.lineWidth = 1;
+//     c.strokeStyle = 'rgba(255,255,255,0.2)';
+//     c.stroke();
+//   };
 
-//     const absolute = {x: 0, y: 0}
-//     var mouseButton = 0;
-//     const mousePosition = {x: 0, y: 0}
+//   /**
+//    * Renders body vertex numbers.
+//    * @private
+//    * @method vertexNumbers
+//    * @param {render} render
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+//   private vertexNumbers(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       i,
+//       j,
+//       k;
 
-//     this.mouseDown = (event: any) => {
-//       getMousePosition(event, this.canvas, this.pixelRatio, absolute);
-//       const touches = event.changedTouches;
-//       if (touches) {
-//         mouseButton = 0;
-//         event.preventDefault();
+//     for (i = 0; i < bodies.length; i++) {
+//       var parts = bodies[i].parts;
+//       for (k = parts.length > 1 ? 1 : 0; k < parts.length; k++) {
+//         var part = parts[k];
+//         for (j = 0; j < part.vertices.length; j++) {
+//           c.fillStyle = 'rgba(255,255,255,0.2)';
+//           c.fillText(i + '_' + j, part.position.x + (part.vertices[j].x - part.position.x) * 0.8, part.position.y + (part.vertices[j].y - part.position.y) * 0.8);
+//         }
+//       }
+//     }
+//   }
+
+//   /**
+//    * Renders mouse position.
+//    * @private
+//    * @method mousePosition
+//    * @param {render} render
+//    * @param {mouse} mouse
+//    * @param {RenderingContext} context
+//    */
+//   private mousePosition(mouse: any, context: CanvasRenderingContext2D) {
+//     var c = context;
+//     c.fillStyle = 'rgba(255,255,255,0.8)';
+//     c.fillText(mouse.position.x + '  ' + mouse.position.y, mouse.position.x + 5, mouse.position.y - 5);
+//   };
+
+//   /**
+//    * Draws body bounds
+//    * @private
+//    * @method bodyBounds
+//    * @param {render} render
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyBounds(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       engine = this.engine,
+//       options = this.options;
+
+//     c.beginPath();
+
+//     for (var i = 0; i < bodies.length; i++) {
+//       var body = bodies[i];
+
+//       if (body.visible) {
+//         var parts = bodies[i].parts;
+//         for (var j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+//           var part = parts[j];
+//           c.rect(part.bounds.min.x, part.bounds.min.y, part.bounds.max.x - part.bounds.min.x, part.bounds.max.y - part.bounds.min.y);
+//         }
+//       }
+//     }
+
+//     if (options.wireframes) {
+//       c.strokeStyle = 'rgba(255,255,255,0.08)';
+//     } else {
+//       c.strokeStyle = 'rgba(0,0,0,0.1)';
+//     }
+
+//     c.lineWidth = 1;
+//     c.stroke();
+//   }
+
+//   /**
+//    * Draws body angle indicators and axes
+//    * @private
+//    * @method bodyAxes
+//    * @param {render} render
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyAxes(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       options = this.options,
+//       part,
+//       i,
+//       j,
+//       k;
+
+//     c.beginPath();
+
+//     for (i = 0; i < bodies.length; i++) {
+//       var body = bodies[i],
+//         parts = body.parts;
+
+//       if (!body.visible)
+//         continue;
+
+//       if (options.showAxes) {
+//         // render all axes
+//         for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+//           part = parts[j];
+//           for (k = 0; k < part.axes.length; k++) {
+//             var axis = part.axes[k];
+//             c.moveTo(part.position.x, part.position.y);
+//             c.lineTo(part.position.x + axis.x * 20, part.position.y + axis.y * 20);
+//           }
+//         }
 //       } else {
-//         mouseButton = event.button;
-//       }
-//       mousePosition.x = absolute.x * this.scaleX + this.offsetX;
-//       mousePosition.y = absolute.y * this.scaleY + this.offsetY;
-//       // mouse.mousedownPosition.x = mouse.position.x;
-//       // mouse.mousedownPosition.y = mouse.position.y;
-//       // mouse.sourceEvents.mousedown = event;
-//       px[PuppyKey.UserActive] = true
-//       fficall(px, PuppyKey.mouseDown, mousePosition.x | 0, mousePosition.y | 0, mouseButton)
-//     }
-
-//     this.mouseMove = (event: any) => {
-//       getMousePosition(event, this.canvas, this.pixelRatio, absolute);
-//       const touches = event.changedTouches;
-//       if (touches) {
-//         mouseButton = 0;
-//         event.preventDefault();
-//       }
-//       mousePosition.x = (absolute.x * this.scaleX + this.offsetX) | 0;
-//       mousePosition.y = (absolute.y * this.scaleY + this.offsetY) | 0;
-//       //mouse.sourceEvents.mousemove = event;
-//       px[PuppyKey.UserActive] = true
-//       if(px[PuppyKey.mouseMove]) {
-//         fficall(px, PuppyKey.mouseMove, mousePosition.x, mousePosition.y, mouseButton)
+//         for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+//           part = parts[j];
+//           for (k = 0; k < part.axes.length; k++) {
+//             // render a single axis indicator
+//             c.moveTo(part.position.x, part.position.y);
+//             c.lineTo((part.vertices[0].x + part.vertices[part.vertices.length - 1].x) / 2,
+//               (part.vertices[0].y + part.vertices[part.vertices.length - 1].y) / 2);
+//           }
+//         }
 //       }
 //     }
 
-//     this.mouseUp = (event: any) => {
-//       getMousePosition(event, this.canvas, this.pixelRatio, absolute);
-//       const touches = event.changedTouches;
-//       if (touches) {
-//         event.preventDefault();
+//     // if (options.wireframes) {
+//     c.strokeStyle = 'indianred';
+//     c.lineWidth = 1;
+//     // } else {
+//     //   c.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+//     //   c.globalCompositeOperation = 'overlay';
+//     //   c.lineWidth = 2;
+//     // }
+
+//     c.stroke();
+//     // c.globalCompositeOperation = 'source-over';
+//   }
+
+//   /**
+//    * Draws body positions
+//    * @private
+//    * @method bodyPositions
+//    * @param {render} render
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyPositions(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context;
+
+//     c.beginPath();
+
+//     // render current positions
+//     for (var i = 0; i < bodies.length; i++) {
+//       const body = bodies[i];
+//       if (!body.visible)
+//         continue;
+
+//       // handle compound parts
+//       for (var k = 0; k < body.parts.length; k++) {
+//         const part = body.parts[k];
+//         c.arc(part.position.x, part.position.y, 10, 0, 2 * Math.PI, false);
+//         c.closePath();
 //       }
-//       mouseButton = -1;
-//       mouse.position.x = mouse.absolute.x * this.scale.x + this.offset.x;
-//       mouse.position.y = mouse.absolute.y * this.scale.y + this.offset.y;
-//       mouse.mouseupPosition.x = mouse.position.x;
-//       mouse.mouseupPosition.y = mouse.position.y;
-//       mouse.sourceEvents.mouseup = event;
-//       this.engine.world.isStillActive = true;
-//       this.engine.world.fficall('__mouseup__', mouse.position.x | 0, mouse.position.y | 0, mouse.button);
 //     }
 
-//     this.mouseWheel = (event: any) => {
-//       mouse.wheelDelta = Math.max(-1, Math.min(1, event.wheelDelta || -event.detail));
-//       //      event.preventDefault();
-//     };
+//     c.fillStyle = 'indianred';
+//     c.fill();
 
-//     // var updateGravity = function (event) {
-//     //   var orientation = typeof window.orientation !== 'undefined' ? window.orientation : 0,
-//     //     gravity = engine.world.gravity;
+//     c.beginPath();
 
-//     //   if (orientation === 0) {
-//     //     gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-//     //     gravity.y = Common.clamp(event.beta, -90, 90) / 90;
-//     //   } else if (orientation === 180) {
-//     //     gravity.x = Common.clamp(event.gamma, -90, 90) / 90;
-//     //     gravity.y = Common.clamp(-event.beta, -90, 90) / 90;
-//     //   } else if (orientation === 90) {
-//     //     gravity.x = Common.clamp(event.beta, -90, 90) / 90;
-//     //     gravity.y = Common.clamp(-event.gamma, -90, 90) / 90;
-//     //   } else if (orientation === -90) {
-//     //     gravity.x = Common.clamp(-event.beta, -90, 90) / 90;
-//     //     gravity.y = Common.clamp(event.gamma, -90, 90) / 90;
+//     // render previous positions
+//     for (var i = 0; i < bodies.length; i++) {
+//       const body = bodies[i];
+//       if (body.visible) {
+//         c.arc(body.positionPrev.x, body.positionPrev.y, 5, 0, 2 * Math.PI, false);
+//         c.closePath();
+//       }
+//     }
+
+//     c.fillStyle = 'blue';
+//     c.fill();
+//   }
+
+//   /**
+//    * Draws body velocity
+//    * @private
+//    * @method bodyVelocity
+//    * @param {render} this
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyVelocity(bodies: Body[], context: CanvasRenderingContext2D) {
+//     const c = context;
+//     c.beginPath();
+//     for (var i = 0; i < bodies.length; i++) {
+//       var body = bodies[i];
+//       if (!body.visible)
+//         continue;
+//       c.moveTo(body.position.x, body.position.y);
+//       c.lineTo(body.position.x + (body.position.x - body.positionPrev.x) * 2, body.position.y + (body.position.y - body.positionPrev.y) * 2);
+//     }
+
+//     c.lineWidth = 8;
+//     c.strokeStyle = 'cornflowerblue';
+//     c.stroke();
+//   }
+
+//   /**
+//    * Draws body ids
+//    * @private
+//    * @method bodyIds
+//    * @param {render} this
+//    * @param {body[]} bodies
+//    * @param {RenderingContext} context
+//    */
+
+//   private bodyIds(bodies: Body[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       i,
+//       j;
+
+//     for (i = 0; i < bodies.length; i++) {
+//       if (!bodies[i].visible)
+//         continue;
+
+//       var parts = bodies[i].parts;
+//       for (j = parts.length > 1 ? 1 : 0; j < parts.length; j++) {
+//         var part = parts[j];
+//         c.font = "12px Arial";
+//         c.fillStyle = 'rgba(255,255,255,0.5)';
+//         c.fillText(`${part.id}`, part.position.x + 10, part.position.y - 10);
+//       }
+//     }
+//   }
+
+//   /**
+//    * Description
+//    * @private
+//    * @method collisions
+//    * @param {render} render
+//    * @param {pair[]} pairs
+//    * @param {RenderingContext} context
+//    */
+
+//   private collisions(pairs: Pair[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       options = this.options,
+//       corrected,
+//       bodyA,
+//       bodyB;
+//     const fillStyle = 'orange';
+//     // if (options.wireframes) {
+//     //   c.fillStyle = 'rgba(255,255,255,0.7)';
+//     // } else {
+//     //   c.fillStyle = 'orange';
+//     // }
+//     const world = this.world;
+
+//     c.beginPath();
+
+//     // render collision positions
+//     for (var i = 0; i < pairs.length; i++) {
+//       const pair = pairs[i];
+//       if (!pair.isActive)
+//         continue;
+//       for (var j = 0; j < pair.activeContacts.length; j++) {
+//         const vertex = pair.activeContacts[j].vertex;
+//         //c.rect(vertex.x - 1.5, vertex.y - 1.5, 3.5, 3.5);
+//         c.rect(vertex.x - 4, vertex.y - this.yscale(4), 9, 9);
+//       }
+//     }
+
+//     c.fillStyle = fillStyle;
+//     c.fill();
+
+//     // c.beginPath();
+
+//     // // render collision normals
+//     // for (var i = 0; i < pairs.length; i++) {
+//     //   const pair = pairs[i];
+
+//     //   if (!pair.isActive)
+//     //     continue;
+
+//     //   const collision = pair.collision!;
+
+//     //   if (pair.activeContacts.length > 0) {
+//     //     var normalPosX = pair.activeContacts[0].vertex.x,
+//     //       normalPosY = pair.activeContacts[0].vertex.y;
+
+//     //     if (pair.activeContacts.length === 2) {
+//     //       normalPosX = (pair.activeContacts[0].vertex.x + pair.activeContacts[1].vertex.x) / 2;
+//     //       normalPosY = (pair.activeContacts[0].vertex.y + pair.activeContacts[1].vertex.y) / 2;
+//     //     }
+
+//     //     if (collision.bodyB === collision.supports[0].body || collision.bodyA.isStatic === true) {
+//     //       c.moveTo(normalPosX - collision.normal.x * 8, normalPosY - collision.normal.y * 8);
+//     //     } else {
+//     //       c.moveTo(normalPosX + collision.normal.x * 8, normalPosY + collision.normal.y * 8);
+//     //     }
+
+//     //     c.lineTo(normalPosX, normalPosY);
 //     //   }
-//     // };
-//     // window.addEventListener('deviceorientation', updateGravity);
+//     // }
+//     // c.fillStyle = fillStyle;
+//     // c.lineWidth = 5;
+//     // c.stroke();
 //   }
 
-//   private enableInputDevices() {
-//     if (this.keyDown != null) {
-//       document.addEventListener('keydown', this.keyDown);
-//       document.addEventListener('keyup', this.keyUp);
+//   /**
+//    * Description
+//    * @private
+//    * @method separations
+//    * @param {render} render
+//    * @param {pair[]} pairs
+//    * @param {RenderingContext} context
+//    */
+//   private separations(pairs: Pair[], context: CanvasRenderingContext2D) {
+//     var c = context,
+//       options = this.options,
+//       pair,
+//       collision,
+//       corrected,
+//       bodyA,
+//       bodyB,
+//       i,
+//       j;
 
-//       const element = this.canvas;
-//       element.addEventListener('mousemove', this.mouseMove);
-//       element.addEventListener('mousedown', this.mouseDown);
-//       element.addEventListener('mouseup', this.mouseUp);
+//     c.beginPath();
 
-//       //element.addEventListener('mousewheel', this.mouseWheel);
-//       // element.addEventListener('DOMMouseScroll', this.mouseWheel);
+//     // render separations
+//     for (i = 0; i < pairs.length; i++) {
+//       pair = pairs[i];
 
-//       element.addEventListener('touchmove', this.mouseMove);
-//       element.addEventListener('touchstart', this.mouseDown);
-//       element.addEventListener('touchend', this.mouseUp);
+//       if (!pair.isActive)
+//         continue;
+
+//       collision = pair.collision!;
+//       bodyA = collision.bodyA;
+//       bodyB = collision.bodyB;
+
+//       var k = 1;
+
+//       if (!bodyB.isStatic && !bodyA.isStatic) k = 0.5;
+//       if (bodyB.isStatic) k = 0;
+
+//       c.moveTo(bodyB.position.x, bodyB.position.y);
+//       c.lineTo(bodyB.position.x - collision.penetration.x * k, bodyB.position.y - collision.penetration.y * k);
+
+//       k = 1;
+
+//       if (!bodyB.isStatic && !bodyA.isStatic) k = 0.5;
+//       if (bodyA.isStatic) k = 0;
+
+//       c.moveTo(bodyA.position.x, bodyA.position.y);
+//       c.lineTo(bodyA.position.x + collision.penetration.x * k, bodyA.position.y + collision.penetration.y * k);
 //     }
+
+//     c.strokeStyle = 'black' // 'rgba(255,165,0,0.5)';
+//     c.stroke();
 //   }
 
-//   private disableInputDevices() {
-//     if (this.keyDown !== null) {
-//       document.removeEventListener('keydown', this.keyDown);
-//       document.removeEventListener('keyup', this.keyUp);
+//   /**
+//    * Description
+//    * @private
+//    * @method grid
+//    * @param {render} this
+//    * @param {grid} grid
+//    * @param {RenderingContext} context
+//    */
 
-//       const element = this.canvas;
-//       element.removeEventListener('mousemove', this.mouseMove);
-//       element.removeEventListener('mousedown', this.mouseDown);
-//       element.removeEventListener('mouseup', this.mouseUp);
+//   private grid(grid: Grid, context: CanvasRenderingContext2D) {
+//     const c = context;
+//     const width = grid.bucketWidth;
+//     const height = grid.bucketHeight;
+//     c.strokeStyle = 'black';
+//     c.beginPath();
 
-//       // element.removeEventListener('mousewheel', this.mouseWheel);
-//       // element.addEventListener('DOMMouseScroll', this.mouseWheel);
+//     const bucketIds = Object.keys(grid.buckets);
 
-//       element.removeEventListener('touchmove', this.mouseMove);
-//       element.removeEventListener('touchstart', this.mouseDown);
-//       element.removeEventListener('touchend', this.mouseUp);
+//     for (const bucketId of bucketIds) {
+//       if (grid.buckets[bucketId].length < 1)
+//         continue;
+
+//       var region = bucketId.split(/C|R/);
+//       c.rect(parseInt(region[1], 10) * width + 0.5,
+//         parseInt(region[2], 10) * height + 0.5,
+//         width,
+//         height);
 //     }
+
+//     c.lineWidth = 1;
+//     c.stroke();
 //   }
 
+//   /**
+//    * Description
+//    * @private
+//    * @method inspector
+//    * @param {inspector} inspector
+//    * @param {RenderingContext} context
+//    */
+//   private inspector(inspector: any, context: CanvasRenderingContext2D) {
+//     var engine = inspector.engine,
+//       selected = inspector.selected,
+//       render = inspector.render,
+//       options = render.options,
+//       bounds;
+
+//     if (options.hasBounds) {
+//       var boundsWidth = render.bounds.max.x - render.bounds.min.x,
+//         boundsHeight = render.bounds.max.y - render.bounds.min.y,
+//         boundsScaleX = boundsWidth / render.options.width,
+//         boundsScaleY = boundsHeight / render.options.height;
+
+//       context.scale(1 / boundsScaleX, 1 / boundsScaleY);
+//       context.translate(-render.bounds.min.x, -render.bounds.min.y);
+//     }
+
+//     for (var i = 0; i < selected.length; i++) {
+//       var item = selected[i].data;
+
+//       context.translate(0.5, 0.5);
+//       context.lineWidth = 1;
+//       context.strokeStyle = 'rgba(255,165,0,0.9)';
+//       context.setLineDash([1, 2]);
+
+//       switch (item.type) {
+
+//         case 'body':
+
+//           // render body selections
+//           bounds = item.bounds;
+//           context.beginPath();
+//           context.rect(Math.floor(bounds.min.x - 3), Math.floor(bounds.min.y - 3),
+//             Math.floor(bounds.max.x - bounds.min.x + 6), Math.floor(bounds.max.y - bounds.min.y + 6));
+//           context.closePath();
+//           context.stroke();
+
+//           break;
+
+//         case 'constraint':
+
+//           // render constraint selections
+//           var point = item.pointA;
+//           if (item.bodyA)
+//             point = item.pointB;
+//           context.beginPath();
+//           context.arc(point.x, point.y, 10, 0, 2 * Math.PI);
+//           context.closePath();
+//           context.stroke();
+
+//           break;
+
+//       }
+
+//       context.setLineDash([]);
+//       context.translate(-0.5, -0.5);
+//     }
+
+//     // render selection region
+//     if (inspector.selectStart !== null) {
+//       context.translate(0.5, 0.5);
+//       context.lineWidth = 1;
+//       context.strokeStyle = 'rgba(255,165,0,0.6)';
+//       context.fillStyle = 'rgba(255,165,0,0.1)';
+//       bounds = inspector.selectBounds;
+//       context.beginPath();
+//       context.rect(Math.floor(bounds.min.x), Math.floor(bounds.min.y),
+//         Math.floor(bounds.max.x - bounds.min.x), Math.floor(bounds.max.y - bounds.min.y));
+//       context.closePath();
+//       context.stroke();
+//       context.fill();
+//       context.translate(-0.5, -0.5);
+//     }
+
+//     if (options.hasBounds)
+//       context.setTransform(1, 0, 0, 1, 0, 0);
+//   }
 
 
 // }
