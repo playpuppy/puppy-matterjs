@@ -502,7 +502,6 @@ export class Animator {
         }
       }
     });
-
   }
 
   protected drawPhysicsLayer() {
@@ -630,7 +629,6 @@ export class Animator {
     //   }
     // };
     // window.addEventListener('deviceorientation', updateGravity);
-
   }
 
   private enableInputDevices() {

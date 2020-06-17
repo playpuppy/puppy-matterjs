@@ -1,6 +1,6 @@
 import { APIs, Module, Context} from '@playpuppy/puppyjs';
 import { Animator } from './anime';
-import { Engine, Runner, Render, Mouse, MouseConstraint, World, Body, Bodies } from 'matter-js'
+import { World, Body, Bodies } from 'matter-js'
 import { chooseColorScheme, choose} from './color';
 
 const DefinedAPIs: APIs = [
@@ -29,12 +29,23 @@ export class LibMatterJS extends Module {
     }
   }
 
-  rect(x: number, y: number, width: number, height: number, options: any = {}) {
+  rect(x: number, y: number, width: number, height: number, options : any = {}) {
     if(this.player) {
       if(!options.fillStyle) {
         options.fillStyle = choose(this.colorScheme);
       }
       const body = Bodies.rectangle(x, y, width, height, options)
+      World.addBody(this.player.world, body)
+      return body;
+    }
+  }
+
+  circle(x: number, y: number, radius: number, options: any = {}) {
+    if (this.player) {
+      if (!options.fillStyle) {
+        options.fillStyle = choose(this.colorScheme);
+      }
+      const body = Bodies.circle(x, y, radius, options)
       World.addBody(this.player.world, body)
       return body;
     }
